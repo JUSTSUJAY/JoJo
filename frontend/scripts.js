@@ -1,108 +1,98 @@
-// Initialize game state
-let gameState = [0, 0, 0, 0, 0, 0, 0, 0, 0]; // Represents empty board
-let currentPlayer = 1; // Player 1 starts the game
-let gameActive = true;
-let darkTheme = true; // Default to dark theme
+var player;
+var gameActive = 1;
+let darkTheme = true;
+async function startGame() {
+    // Generate a random number between 0 and 1
+    const randomNumber = Math.random();
+    player = randomNumber >= 0.5 ? 1 : -1;
+    console.log(`Player: ${player}`)
+    if(player===1){
+        document.getElementById('game-status').innerText = "Your Turn...";
+    }
+    if(player===-1){
+        document.getElementById('game-status').innerText = "JoJo's Turn";
+    }
+    const turn = await fetch('/startgame', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ player: player })
+    })
 
-// Function to handle player moves
-function handleMove(cellIndex) {
-    console.log(`Cell ${cellIndex} clicked`);
-    // Check if cell is empty and game is active
-    if (gameState[cellIndex] === 0 && gameActive) {
-        // Update cell with current player's mark
-        gameState[cellIndex] = currentPlayer;
-
-        // Update UI with player's mark
-        document.getElementById(`cell${cellIndex}`).innerText = currentPlayer === 1 ? 'X' : 'O';
-
-        // Check for winner or draw
-        if (checkWin() || checkDraw()) {
-            gameActive = false;
-            if (checkWin()) {
-                // Highlight winning cells
-                const winCells = getWinningCells();
-                winCells.forEach(cell => {
-                    document.getElementById(`cell${cell}`).style.backgroundColor = 'lightgreen';
-                });
-                document.getElementById('game-status').innerText = `Player ${currentPlayer} wins!`;
-            } else {
-                document.getElementById('game-status').innerText = 'It\'s a draw!';
-            }
-        } else {
-            // Switch players
-            currentPlayer = currentPlayer === 1 ? -1 : 1;
-            document.getElementById('game-status').innerText = `Player ${currentPlayer}'s turn`;
-        }
+    const data = await turn.json();
+    if(data.agentMove !== '-1'){ // if it is not -1 then we have received the agent's action and we will need to update the board with it
+        updateBoard(-1,data.agentMove)
+        setTimeout(function() {
+            document.getElementById('game-status').innerText = "Make a move";
+        }, 1000); // 1000 milliseconds = 1 second
+    }
+    else{
+        setTimeout(function() {
+            document.getElementById('game-status').innerText = "Make a move";
+        }, 1000); // 1000 milliseconds = 1 second
     }
 }
 
-// Function to check for a win
-function checkWin() {
-    const winConditions = [
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8],
-        [0, 3, 6],
-        [1, 4, 7],
-        [2, 5, 8],
-        [0, 4, 8],
-        [2, 4, 6]
-    ];
 
-    for (let condition of winConditions) {
-        const [a, b, c] = condition;
-        if (gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
-            return true;
+async function handleMove(cellIndex) {
+    if(gameActive)
+    {
+        updateBoard(1,cellIndex)
+        const response = await fetch('/agent_move', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ cellIndex })
+      });
+      const data = await response.json();
+      console.log(`gameActive':${data.gameActive}`)
+      if(parseInt(data.gameActive) === 1){ // game has either drawn or somebody won
+        updateBoard(-1,parseInt(data.agent_action))
+      }
+      else{
+        if(data.winner === 'JoJo Won!'){
+            updateBoard(-1,parseInt(data.agent_action));document.getElementById('game-status').innerText = data.winner;
         }
-    }
-
-    return false;
-}
-
-// Function to get the winning cells
-function getWinningCells() {
-    const winConditions = [
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8],
-        [0, 3, 6],
-        [1, 4, 7],
-        [2, 5, 8],
-        [0, 4, 8],
-        [2, 4, 6]
-    ];
-
-    for (let condition of winConditions) {
-        const [a, b, c] = condition;
-        if (gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
-            return condition;
+        else{
+            document.getElementById('game-status').innerText = data.winner;
         }
+      }
+
+
     }
-
-    return [];
 }
 
-// Function to check for a draw
-function checkDraw() {
-    return !gameState.includes(0);
+function updateBoard(player, index) {
+    var pos = document.getElementById(`cell${index}`).innerText = player === 1 ? 'X' : 'O';
+    player = player*-1
 }
 
-// Function to reset the game
-function resetGame() {
-    // Reset game state
-    gameState = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-    currentPlayer = 1;
-    gameActive = true;
 
+async function resetGame() {
+
+    gameActive = 1;
+    const response = await fetch('/reset', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    })
+    const data = await response.json();
+    if(data.num_legal_actions == '9'){
+        document.getElementById('game-status').innerText = 'Reset Successful';
+    }
+  
     // Reset UI
     document.querySelectorAll('.cell').forEach(cell => {
         cell.innerText = '';
         cell.style.backgroundColor = 'transparent';
     });
-    document.getElementById('game-status').innerText = `Player ${currentPlayer}'s turn`;
-}
+    
+    console.log("Reset")
+} 
 
-// Function to toggle theme
 function toggleTheme() {
     darkTheme = !darkTheme;
     const body = document.querySelector('body');
@@ -113,17 +103,17 @@ function toggleTheme() {
         body.style.backgroundColor = 'black';
         body.style.color = 'white';
         buttons.forEach(button => {
-            button.style.backgroundColor = '#007bff';
+            button.style.backgroundColor = 'rgb(69,79,89)';
             button.style.color = 'white';
         });
         cells.forEach(cell => {
             cell.style.borderColor = 'white';
         });
     } else {
-        body.style.backgroundColor = 'white';
+        body.style.backgroundColor = '#f6e0b5';
         body.style.color = 'black';
         buttons.forEach(button => {
-            button.style.backgroundColor = 'lightgray';
+            button.style.backgroundColor = '#a39193';
             button.style.color = 'black';
         });
         cells.forEach(cell => {
