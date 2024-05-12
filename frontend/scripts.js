@@ -1,15 +1,18 @@
 var player;
 var gameActive = 1;
 let darkTheme = true;
+let gameStarted = false
 async function startGame() {
+    await resetGame();
+    gameStarted = true;
     // Generate a random number between 0 and 1
     const randomNumber = Math.random();
     player = randomNumber >= 0.5 ? 1 : -1;
     console.log(`Player: ${player}`)
-    if(player===1){
+    if (player === 1) {
         document.getElementById('game-status').innerText = "Your Turn...";
     }
-    if(player===-1){
+    if (player === -1) {
         document.getElementById('game-status').innerText = "JoJo's Turn";
     }
     const turn = await fetch('/startgame', {
@@ -21,14 +24,14 @@ async function startGame() {
     })
 
     const data = await turn.json();
-    if(data.agentMove !== '-1'){ // if it is not -1 then we have received the agent's action and we will need to update the board with it
-        updateBoard(-1,data.agentMove)
-        setTimeout(function() {
+    if (data.agentMove !== '-1') { // if it is not -1 then we have received the agent's action and we will need to update the board with it
+        updateBoard(-1, data.agentMove)
+        setTimeout(function () {
             document.getElementById('game-status').innerText = "Make a move";
         }, 1000); // 1000 milliseconds = 1 second
     }
-    else{
-        setTimeout(function() {
+    else {
+        setTimeout(function () {
             document.getElementById('game-status').innerText = "Make a move";
         }, 1000); // 1000 milliseconds = 1 second
     }
@@ -36,29 +39,34 @@ async function startGame() {
 
 
 async function handleMove(cellIndex) {
-    if(gameActive)
-    {
-        updateBoard(1,cellIndex)
-        const response = await fetch('/agent_move', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ cellIndex })
-      });
-      const data = await response.json();
-      console.log(`gameActive':${data.gameActive}`)
-      if(parseInt(data.gameActive) === 1){ // game has either drawn or somebody won
-        updateBoard(-1,parseInt(data.agent_action))
-      }
-      else{
-        if(data.winner === 'JoJo Won!'){
-            updateBoard(-1,parseInt(data.agent_action));document.getElementById('game-status').innerText = data.winner;
+    if (!gameStarted) {
+        document.getElementById('game-status').innerText = "Press Start to begin!";
+    }
+    else {
+        if (gameActive) {
+            updateBoard(1, cellIndex)
+            const response = await fetch('/agent_move', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cellIndex })
+            });
+            const data = await response.json();
+            console.log(`gameActive':${data.gameActive}`)
+            if (parseInt(data.gameActive) === 1) { // game has either drawn or somebody won
+                updateBoard(-1, parseInt(data.agent_action))
+            }
+            else {
+                if (data.winner === 'JoJo Won!') {
+                    updateBoard(-1, parseInt(data.agent_action)); document.getElementById('game-status').innerText = data.winner;
+                }
+                else {
+                    document.getElementById('game-status').innerText = data.winner;
+                }
+            }
         }
-        else{
-            document.getElementById('game-status').innerText = data.winner;
-        }
-      }
+
 
 
     }
@@ -66,7 +74,7 @@ async function handleMove(cellIndex) {
 
 function updateBoard(player, index) {
     var pos = document.getElementById(`cell${index}`).innerText = player === 1 ? 'X' : 'O';
-    player = player*-1
+    player = player * -1
 }
 
 
@@ -80,25 +88,25 @@ async function resetGame() {
         },
     })
     const data = await response.json();
-    if(data.num_legal_actions == '9'){
-        document.getElementById('game-status').innerText = 'Reset Successful';
+    if (data.num_legal_actions == '9') {
+        document.getElementById('game-status').innerText = 'Reset Successful!';
     }
-  
+
     // Reset UI
     document.querySelectorAll('.cell').forEach(cell => {
         cell.innerText = '';
         cell.style.backgroundColor = 'transparent';
     });
-    
+
     console.log("Reset")
-} 
+}
 
 function toggleTheme() {
     darkTheme = !darkTheme;
     const body = document.querySelector('body');
     const buttons = document.querySelectorAll('button');
     const cells = document.querySelectorAll('.cell');
-    
+
     if (darkTheme) {
         body.style.backgroundColor = 'black';
         body.style.color = 'white';
