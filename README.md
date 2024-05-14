@@ -8,3 +8,23 @@ You can train your own agent by cloning/forking this repo, understand how things
 If you have any feature that you can add to this project, feel free to open a PR and I can merge it if it's a good value addition to it as I am working alone on my weekends so it will be great to have an equally passionate partner to contribute or also if you came across any problem(there shouldn't be) you can create issue and we'll try to solve it.
 ![alt text](Images/dashboard.png)
 You can reach me on X@[sujay_kapadnis](https://twitter.com/sujay_kapadnis)
+
+
+# Game Demos
+Let's see how JoJo plays the game of TicTacToe, excited?
+
+## GamePlay 1
+<p align = "center">
+  <img src="./Assets/gameplay_1.mp4" alt="gameplay1" />
+</p>
+
+## GamePlay 2
+<p align = "center">
+  <img src="./Assets/gameplay_2.mp4" alt="gameplay2" />
+</p>
+
+
+## Light Theme(Toggle Theme)
+<p align = "center">
+  <img src="./Assets/toggle_theme.mp4" alt="toggle_theme" />
+</p>
