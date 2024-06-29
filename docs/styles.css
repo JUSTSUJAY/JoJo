@@ -5,7 +5,7 @@ body {
     height: 100vh;
     margin: 0;
     background-color: black;
-    color: #f7cf80;
+    color: #ffd381;
 }
 
 .container {
@@ -20,7 +20,7 @@ h1 {
     display: grid;
     grid-template-columns: repeat(3, 100px);
     grid-gap: 10px;
-    margin-top: 20px;
+    margin: 20px 0 0 60px;
 }
 
 .cell {
@@ -79,4 +79,10 @@ button {
 
 #start-button:hover {
     background-color: #045f21;
+}
+footer {
+    margin-top: 30rem;
+    text-align: left;
+    font-size: 1rem;
+    color: #666;
 }

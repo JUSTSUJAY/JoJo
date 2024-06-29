@@ -4,7 +4,7 @@ let darkTheme = true;
 let gameStarted = false;
 
 // Replace this URL with the one Render provides for your backend
-const BACKEND_URL = 'https://your-render-service.onrender.com';
+const BACKEND_URL = 'https://jojo-6l0n.onrender.com';
 
 async function startGame() {
     await resetGame();

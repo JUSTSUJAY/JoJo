@@ -10,6 +10,10 @@ import numpy as np
 app = Flask(__name__)
 CORS(app)  # This enables CORS for all routes
 
+@app.route("/")
+def hello():
+    return "Hello, World!"
+    
 # Load pre-trained model for Tic-Tac-Toe agent
 model = LinearNetwork(input_shape=(9,), action_space=9)
 model.load_state_dict(torch.load("./tictactoe/one_dim/out/model.pth"))
