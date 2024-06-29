@@ -1,5 +1,5 @@
-# backend/app.py
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 from game import TicTacToe
 import torch
 from models import LinearNetwork
@@ -7,24 +7,8 @@ from agents import AlphaZeroAgent
 import os
 import numpy as np
 
-# Get the absolute path to the parent directory of the current file
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-
-# Create the Flask app instance
-app = Flask(__name__, template_folder=os.path.join(parent_dir, 'frontend'), static_folder=os.path.join(parent_dir, 'frontend'))
-
-# Define the route to render the index.html template
-@app.route('/')
-def index():
-    return render_template("index.html")
-
-@app.route('/styles.css')
-def styles():
-    return app.send_static_file('styles.css')
-
-@app.route('/scripts.js')
-def script():
-    return app.send_static_file('scripts.js')
+app = Flask(__name__)
+CORS(app)  # This enables CORS for all routes
 
 # Load pre-trained model for Tic-Tac-Toe agent
 model = LinearNetwork(input_shape=(9,), action_space=9)
@@ -34,9 +18,7 @@ agent = AlphaZeroAgent(model)
 game = TicTacToe()
 
 def is_gameActive(game):
-    if game.get_result() is None:
-        return True # no result yet, game continues
-    return False # games has drawn or somebody won
+    return game.get_result() is None
 
 @app.route("/agent_move", methods=["POST"])
 def agent_move():
@@ -44,77 +26,44 @@ def agent_move():
     last_human_move = data['cellIndex']
     game.step(last_human_move)
     gameActive_after_human_action = is_gameActive(game)
-    # if gameActive is True means aftre human made that move, there still open positions on the board and also winner hasn't been decided so agent should make a move
-    if(not gameActive_after_human_action): 
-        if(game.get_result() == 1):
-            winner = 'You Won!'
-        else:
-            winner = "It's a Draw!"
-        # game drawn or human won
-        return jsonify(
-                {
-
-                    'gameActive':str(int(gameActive_after_human_action)),
-                    'winner':winner
-                }
-            )
+    if not gameActive_after_human_action:
+        winner = 'You Won!' if game.get_result() == 1 else "It's a Draw!"
+        return jsonify({
+            'gameActive': str(int(gameActive_after_human_action)),
+            'winner': winner
+        })
     else:
         action = np.argmax(agent.policy_fn(game))
         game.step(action)
         gameActive_after_agent_action = is_gameActive(game)
-        if(not gameActive_after_agent_action):
-            if(game.get_result() == -1):
-                winner = 'JoJo Won!'
-            else:
-                winner = "It's a Draw!"
-            return jsonify(
-                    {
-
-                        'gameActive':str(int(gameActive_after_agent_action)),
-                        'winner':winner,
-                        'agent_action':str(action)
-                    }
-                )
-        return jsonify(
-                    {
-                        'gameActive':str(int(gameActive_after_agent_action)),
-                        'agent_action':str(action)
-                    }
-                )
-
-    
-
+        if not gameActive_after_agent_action:
+            winner = 'JoJo Won!' if game.get_result() == -1 else "It's a Draw!"
+            return jsonify({
+                'gameActive': str(int(gameActive_after_agent_action)),
+                'winner': winner,
+                'agent_action': str(action)
+            })
+        return jsonify({
+            'gameActive': str(int(gameActive_after_agent_action)),
+            'agent_action': str(action)
+        })
 
 @app.route("/startgame", methods=["POST"])
 def startMove():
     data = request.json
     player = data['player']
-    if player == -1: # agent's move
+    if player == -1:
         game.turn = -1
         action = np.argmax(agent.policy_fn(game))
         game.step(action)
-        return jsonify(
-            {
-                'agentMove':str(action)
-            }
-        )
+        return jsonify({'agentMove': str(action)})
     else:
-        return jsonify(
-            {
-                'agentMove':'-1'
-            }
-        )
+        return jsonify({'agentMove': '-1'})
 
 @app.route("/reset", methods=["POST"])
 def reset():
-    # game = TicTacToe()
     game.reset()
-    return jsonify(
-            {
-                'num_legal_actions':str(len(game.get_legal_actions()))
-            }
-        )
-
+    return jsonify({'num_legal_actions': str(len(game.get_legal_actions()))})
 
 if __name__ == "__main__":
     app.run(debug=True)

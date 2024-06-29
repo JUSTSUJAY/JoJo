@@ -1,42 +1,44 @@
 var player;
 var gameActive = 1;
 let darkTheme = true;
-let gameStarted = false
+let gameStarted = false;
+
+// Replace this URL with the one Render provides for your backend
+const BACKEND_URL = 'https://your-render-service.onrender.com';
+
 async function startGame() {
     await resetGame();
     gameStarted = true;
-    // Generate a random number between 0 and 1
     const randomNumber = Math.random();
     player = randomNumber >= 0.5 ? 1 : -1;
-    console.log(`Player: ${player}`)
+    console.log(`Player: ${player}`);
     if (player === 1) {
         document.getElementById('game-status').innerText = "Your Turn...";
     }
     if (player === -1) {
         document.getElementById('game-status').innerText = "JoJo's Turn";
     }
-    const turn = await fetch('/startgame', {
+    const turn = await fetch(`${BACKEND_URL}/startgame`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ player: player })
-    })
+    });
 
     const data = await turn.json();
-    if (data.agentMove !== '-1') { // if it is not -1 then we have received the agent's action and we will need to update the board with it
-        updateBoard(-1, data.agentMove)
+    if (data.agentMove !== '-1') {
+        updateBoard(-1, data.agentMove);
         setTimeout(function () {
             document.getElementById('game-status').innerText = "Make a move";
-        }, 1000); // 1000 milliseconds = 1 second
+        }, 1000);
     }
     else {
         setTimeout(function () {
             document.getElementById('game-status').innerText = "Make a move";
-        }, 1000); // 1000 milliseconds = 1 second
+        }, 1000);
     }
 }
-
 
 async function handleMove(cellIndex) {
     if (!gameStarted) {
@@ -44,8 +46,8 @@ async function handleMove(cellIndex) {
     }
     else {
         if (gameActive) {
-            updateBoard(1, cellIndex)
-            const response = await fetch('/agent_move', {
+            updateBoard(1, cellIndex);
+            const response = await fetch(`${BACKEND_URL}/agent_move`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -53,52 +55,47 @@ async function handleMove(cellIndex) {
                 body: JSON.stringify({ cellIndex })
             });
             const data = await response.json();
-            console.log(`gameActive':${data.gameActive}`)
-            if (parseInt(data.gameActive) === 1) { // game has either drawn or somebody won
-                updateBoard(-1, parseInt(data.agent_action))
+            console.log(`gameActive':${data.gameActive}`);
+            if (parseInt(data.gameActive) === 1) {
+                updateBoard(-1, parseInt(data.agent_action));
             }
             else {
                 if (data.winner === 'JoJo Won!') {
-                    updateBoard(-1, parseInt(data.agent_action)); document.getElementById('game-status').innerText = data.winner;
+                    updateBoard(-1, parseInt(data.agent_action));
+                    document.getElementById('game-status').innerText = data.winner;
                 }
                 else {
                     document.getElementById('game-status').innerText = data.winner;
                 }
             }
         }
-
-
-
     }
 }
 
 function updateBoard(player, index) {
     var pos = document.getElementById(`cell${index}`).innerText = player === 1 ? 'X' : 'O';
-    player = player * -1
+    player = player * -1;
 }
 
-
 async function resetGame() {
-
     gameActive = 1;
-    const response = await fetch('/reset', {
+    const response = await fetch(`${BACKEND_URL}/reset`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-    })
+    });
     const data = await response.json();
     if (data.num_legal_actions == '9') {
         document.getElementById('game-status').innerText = 'Reset Successful!';
     }
 
-    // Reset UI
     document.querySelectorAll('.cell').forEach(cell => {
         cell.innerText = '';
         cell.style.backgroundColor = 'transparent';
     });
 
-    console.log("Reset")
+    console.log("Reset");
 }
 
 function toggleTheme() {
