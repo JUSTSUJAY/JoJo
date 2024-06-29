@@ -12,7 +12,7 @@ CORS(app)  # This enables CORS for all routes
 
 # Load pre-trained model for Tic-Tac-Toe agent
 model = LinearNetwork(input_shape=(9,), action_space=9)
-model.load_state_dict(torch.load("./backend/tictactoe/one_dim/out/model.pth"))
+model.load_state_dict(torch.load("./tictactoe/one_dim/out/model.pth"))
 agent = AlphaZeroAgent(model)
 
 game = TicTacToe()
