@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JoJo's Gift</title>
+    <title>TicJo</title>
+    <link rel="icon" href="https://favicongenerator.s3.amazonaws.com/d973f43d82cfe.png" type="image/png">
+
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    
 </head>
 <body>
     <div class="container">
-        <h1>JoJo's Tic Tac Toe Challenge</h1>
+        <h1>Welcome to JoJo Verse!</h1>
+        <div id="game-status">Press Start to begin!</div>
         <div id="game-board">
             <div class="cell" id="cell0" onclick="handleMove(0)"></div>
             <div class="cell" id="cell1" onclick="handleMove(1)"></div>
@@ -20,17 +25,15 @@
             <div class="cell" id="cell7" onclick="handleMove(7)"></div>
             <div class="cell" id="cell8" onclick="handleMove(8)"></div>
         </div>
-        <div id="game-status"></div>
-        <button id="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
-        <button id="reset-button" onclick="resetGame()">Reset Game</button>
-        <div><button id="start-button" onclick="startGame()" style="width: 300px; height: 80px; font-size: 50px;">Start</button>
+        <div class="controls">
+            <button id="start-button" onclick="startGame()">Start Game</button>
+            <div class="secondary-controls">
+                <button id="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+                <button id="reset-button" onclick="resetGame()">Reset Game</button>
+            </div>
         </div>
     </div>
     <br>
-    <footer>
-        <p>Made with ❤️ by Sujay</p>
-        <p>Happy Birthday, JoJo! 🥳🥂</p>
-    </footer>
     <script src="scripts.js"></script>
     
 </body>

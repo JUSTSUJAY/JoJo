@@ -4,7 +4,8 @@ let darkTheme = true;
 let gameStarted = false;
 
 // Replace this URL with the one Render provides for your backend
-const BACKEND_URL = 'https://jojo-6l0n.onrender.com';
+// const BACKEND_URL = 'https://jojo-6l0n.onrender.com';
+const BACKEND_URL = 'http://127.0.0.1:5000';
 
 async function startGame() {
     await resetGame();
@@ -40,13 +41,56 @@ async function startGame() {
     }
 }
 
+// async function handleMove(cellIndex) {
+//     if (!gameStarted) {
+//         document.getElementById('game-status').innerText = "Press Start to begin!";
+//     }
+//     else {
+//         if (gameActive) {
+//             updateBoard(1, cellIndex);
+//             const response = await fetch(`${BACKEND_URL}/agent_move`, {
+//                 method: 'POST',
+//                 headers: {
+//                     'Content-Type': 'application/json'
+//                 },
+//                 body: JSON.stringify({ cellIndex })
+//             });
+//             const data = await response.json();
+//             console.log(`gameActive':${data.gameActive}`);
+//             if (parseInt(data.gameActive) === 1) {
+//                 updateBoard(-1, parseInt(data.agent_action));
+//             }
+//             else {
+//                 if (data.winner === 'JoJo Won!') {
+//                     updateBoard(-1, parseInt(data.agent_action));
+//                     document.getElementById('game-status').innerText = data.winner;
+//                 }
+//                 else {
+//                     document.getElementById('game-status').innerText = data.winner;
+//                 }
+//             }
+//         }
+//     }
+// }
+
 async function handleMove(cellIndex) {
     if (!gameStarted) {
         document.getElementById('game-status').innerText = "Press Start to begin!";
+        return;
     }
-    else {
-        if (gameActive) {
-            updateBoard(1, cellIndex);
+
+    if (gameActive) {
+        const cell = document.getElementById(`cell${cellIndex}`);
+
+        // Prevent clicking on an already occupied cell
+        if (cell.innerText !== '') {
+            document.getElementById('game-status').innerText = "Being Smart, huh?";
+            return;
+        }
+
+        updateBoard(1, cellIndex);
+
+        try {
             const response = await fetch(`${BACKEND_URL}/agent_move`, {
                 method: 'POST',
                 headers: {
@@ -54,23 +98,32 @@ async function handleMove(cellIndex) {
                 },
                 body: JSON.stringify({ cellIndex })
             });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                document.getElementById('game-status').innerText = errorData.message;
+                // Revert the board state
+                updateBoard('', cellIndex);
+                return;
+            }
+
             const data = await response.json();
-            console.log(`gameActive':${data.gameActive}`);
+
             if (parseInt(data.gameActive) === 1) {
                 updateBoard(-1, parseInt(data.agent_action));
-            }
-            else {
+            } else {
                 if (data.winner === 'JoJo Won!') {
                     updateBoard(-1, parseInt(data.agent_action));
-                    document.getElementById('game-status').innerText = data.winner;
                 }
-                else {
-                    document.getElementById('game-status').innerText = data.winner;
-                }
+                document.getElementById('game-status').innerText = data.winner;
             }
+        } catch (error) {
+            console.error('Error during move:', error);
+            document.getElementById('game-status').innerText = "An error occurred. Try again.";
         }
     }
 }
+
 
 function updateBoard(player, index) {
     var pos = document.getElementById(`cell${index}`).innerText = player === 1 ? 'X' : 'O';
@@ -98,6 +151,7 @@ async function resetGame() {
     console.log("Reset");
 }
 
+
 function toggleTheme() {
     darkTheme = !darkTheme;
     const body = document.querySelector('body');
@@ -105,25 +159,29 @@ function toggleTheme() {
     const cells = document.querySelectorAll('.cell');
 
     if (darkTheme) {
-        body.style.backgroundColor = 'black';
-        body.style.color = 'white';
+        body.style.backgroundColor = 'var(--dark-bg)';
+        body.style.color = 'var(--dark-text)';
         buttons.forEach(button => {
-            button.style.backgroundColor = 'rgb(69,79,89)';
+            if (button.id === 'start-button') return;
+            button.style.backgroundColor = 'var(--dark-button)';
             button.style.color = 'white';
         });
-        cells.forEach(cell => {
-            cell.style.borderColor = 'white';
-        });
     } else {
-        body.style.backgroundColor = '#f6e0b5';
-        body.style.color = 'black';
+        body.style.backgroundColor = 'var(--light-bg)';
+        body.style.color = 'var(--light-text)';
         buttons.forEach(button => {
-            button.style.backgroundColor = '#a39193';
-            button.style.color = 'black';
-        });
-        cells.forEach(cell => {
-            cell.style.borderColor = 'black';
+            if (button.id === 'start-button') return;
+            button.style.backgroundColor = 'var(--light-button)';
+            button.style.color = 'white';
         });
     }
-    console.log('Theme toggled');
+}
+
+// Add winning animation
+function highlightWinningCells(winningCombination) {
+    winningCombination.forEach(index => {
+        const cell = document.getElementById(`cell${index}`);
+        cell.style.backgroundColor = darkTheme ? 'var(--dark-text)' : 'var(--light-text)';
+        cell.style.color = darkTheme ? 'var(--dark-bg)' : 'var(--light-bg)';
+    });
 }

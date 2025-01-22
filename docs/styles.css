@@ -1,11 +1,23 @@
+:root {
+    --dark-bg: #1a1a2e;
+    --dark-text: #e94560;
+    --dark-button: #0f3460;
+    --dark-hover: #16213e;
+    --light-bg: #f6e0b5;
+    --light-text: #2d4059;
+    --light-button: #ea5455;
+    --light-hover: #ff6b6b;
+  }
+  
 body {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     margin: 0;
-    background-color: black;
-    color: #ffd381;
+    background-color: var(--dark-bg);
+    color: var(--dark-text);
+    transition: all 0.3s ease;
 }
 
 .container {
@@ -26,12 +38,19 @@ h1 {
 .cell {
     width: 100px;
     height: 100px;
-    border: 1px solid white;
+    border: 2px solid currentColor;
+    border-radius: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 24px;
+    font-size: 48px;
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cell:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
 }
 
 #game-status {
@@ -40,10 +59,20 @@ h1 {
 }
 
 button {
-    margin-top: 20px;
-    padding: 10px 20px;
+    margin: 10px;
+    padding: 15px 30px;
     font-size: 20px;
     cursor: pointer;
+    border-radius: 25px;
+    border: none;
+    transition: all 0.3s ease;
+    background-color: var(--dark-button);
+    color: white;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
 #theme-toggle {
@@ -66,20 +95,40 @@ button {
 }
 
 #start-button {
-    width: 200px; /* Adjust the width as needed */
-    height: 40px; /* Adjust the height as needed */
-    font-size: 16px; /* Adjust the font size as needed */
+    background-color: #4CAF50;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
-#start-button {
-    background-color: #07a004;
-    color: white;
-    border: none;
+
+#game-status {
+    font-size: 28px;
+    margin: 20px;
+    font-weight: bold;
+    min-height: 40px;
 }
 
-#start-button:hover {
-    background-color: #045f21;
+.cell.winner {
+    animation: winPulse 1.5s ease-in-out infinite;
+    background-color: rgba(255, 255, 255, 0.2);
 }
+
+@keyframes winPulse {
+    0% { 
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.7);
+    }
+    50% { 
+        transform: scale(1.1);
+        box-shadow: 0 0 20px 10px rgba(233, 69, 96, 0.7);
+    }
+    100% { 
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.7);
+    }
+}
+
 footer {
     margin-top: 30rem;
     text-align: left;
