@@ -172,6 +172,7 @@ button:active { transform: translateY(1px); }
 }
 
 #game-board {
+    position: relative;
     width: min(calc(100vw - var(--sidebar-width) - 84px), calc(100svh - 56px), 680px);
     height: min(calc(100vw - var(--sidebar-width) - 84px), calc(100svh - 56px), 680px);
     min-width: 280px;
@@ -186,6 +187,7 @@ button:active { transform: translateY(1px); }
 
 .cell {
     position: relative;
+    z-index: 1;
     width: 100%;
     height: 100%;
     border: 0;
@@ -230,9 +232,78 @@ button:active { transform: translateY(1px); }
     color: var(--mark-o);
 }
 
+#win-line {
+    position: absolute;
+    z-index: 3;
+    top: 50%;
+    left: 50%;
+    width: 88%;
+    height: 7px;
+    border-radius: 999px;
+    background: var(--editorial-accent);
+    box-shadow: 0 0 0 1px var(--editorial-bg), 0 10px 28px rgba(0, 0, 0, 0.28);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -50%) scaleX(0);
+    transform-origin: center;
+    transition: opacity 180ms ease, transform 360ms ease;
+}
+
+#game-board.has-win #win-line {
+    opacity: 1;
+    transform: translate(-50%, -50%) scaleX(1);
+}
+
+#game-board.has-win #win-line.row-0 { top: 16.666%; }
+#game-board.has-win #win-line.row-1 { top: 50%; }
+#game-board.has-win #win-line.row-2 { top: 83.333%; }
+#game-board.has-win #win-line.col-0 { left: 16.666%; transform: translate(-50%, -50%) rotate(90deg) scaleX(1); }
+#game-board.has-win #win-line.col-1 { left: 50%; transform: translate(-50%, -50%) rotate(90deg) scaleX(1); }
+#game-board.has-win #win-line.col-2 { left: 83.333%; transform: translate(-50%, -50%) rotate(90deg) scaleX(1); }
+#game-board.has-win #win-line.diag-main { width: 122%; transform: translate(-50%, -50%) rotate(45deg) scaleX(1); }
+#game-board.has-win #win-line.diag-anti { width: 122%; transform: translate(-50%, -50%) rotate(-45deg) scaleX(1); }
+
 .cell.winner {
     animation: winPulse 1.5s ease-in-out infinite;
     background: rgba(232, 224, 208, 0.12);
+}
+
+.result-modal {
+    position: fixed;
+    z-index: 20;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(29, 29, 27, 0.72);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease;
+}
+
+.result-modal.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.result-card {
+    width: min(420px, 100%);
+    padding: 30px;
+    border: 1px solid var(--editorial-rule);
+    background: var(--editorial-bg);
+    box-shadow: 0 32px 90px rgba(0, 0, 0, 0.36);
+}
+
+.result-card .kicker { margin-bottom: 18px; }
+
+.result-card h2 {
+    margin: 0 0 28px;
+    color: var(--editorial-text);
+    font-family: 'Newsreader', Georgia, serif;
+    font-size: clamp(2.2rem, 6vw, 3.6rem);
+    font-weight: 700;
+    letter-spacing: -0.045em;
+    line-height: 0.95;
 }
 
 @keyframes winPulse {

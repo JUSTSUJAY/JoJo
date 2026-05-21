@@ -42,9 +42,19 @@
                 <div class="cell" id="cell6" onclick="handleMove(6)"></div>
                 <div class="cell" id="cell7" onclick="handleMove(7)"></div>
                 <div class="cell" id="cell8" onclick="handleMove(8)"></div>
+                <div id="win-line" aria-hidden="true"></div>
             </div>
         </section>
     </main>
+
+    <div id="result-modal" class="result-modal" aria-hidden="true">
+        <div class="result-card" role="dialog" aria-modal="true" aria-labelledby="result-title">
+            <p class="kicker"><span></span>Game over</p>
+            <h2 id="result-title">X won</h2>
+            <button onclick="closeResultModal()">Continue</button>
+        </div>
+    </div>
+
     <script src="scripts.js"></script>
     
 </body>

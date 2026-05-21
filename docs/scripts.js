@@ -4,6 +4,16 @@ let darkTheme = true;
 let gameStarted = false;
 
 const BACKEND_URL = window.location.origin;
+const WINNING_COMBINATIONS = [
+    { cells: [0, 1, 2], lineClass: 'row-0' },
+    { cells: [3, 4, 5], lineClass: 'row-1' },
+    { cells: [6, 7, 8], lineClass: 'row-2' },
+    { cells: [0, 3, 6], lineClass: 'col-0' },
+    { cells: [1, 4, 7], lineClass: 'col-1' },
+    { cells: [2, 5, 8], lineClass: 'col-2' },
+    { cells: [0, 4, 8], lineClass: 'diag-main' },
+    { cells: [2, 4, 6], lineClass: 'diag-anti' },
+];
 
 async function startGame() {
     await resetGame();
@@ -110,10 +120,12 @@ async function handleMove(cellIndex) {
             if (parseInt(data.gameActive) === 1) {
                 updateBoard(-1, parseInt(data.agent_action));
             } else {
+                gameActive = 0;
                 if (data.winner === 'JoJo Won!') {
                     updateBoard(-1, parseInt(data.agent_action));
                 }
                 document.getElementById('game-status').innerText = data.winner;
+                showGameResult(data.winner);
             }
         } catch (error) {
             console.error('Error during move:', error);
@@ -155,6 +167,8 @@ async function resetGame() {
         cell.style.backgroundColor = '';
         cell.style.color = '';
     });
+    clearWinningLine();
+    closeResultModal();
 
     console.log("Reset");
 }
@@ -163,6 +177,55 @@ async function resetGame() {
 function toggleTheme() {
     darkTheme = !darkTheme;
     document.body.classList.toggle('light-theme', !darkTheme);
+}
+
+function getWinningCombination() {
+    const values = Array.from(document.querySelectorAll('.cell')).map(cell => cell.innerText);
+    return WINNING_COMBINATIONS.find(({ cells }) => {
+        const [a, b, c] = cells;
+        return values[a] && values[a] === values[b] && values[a] === values[c];
+    });
+}
+
+function showWinningLine(winningCombination) {
+    if (!winningCombination) return;
+    const board = document.getElementById('game-board');
+    const line = document.getElementById('win-line');
+    line.className = winningCombination.lineClass;
+    board.classList.add('has-win');
+    highlightWinningCells(winningCombination.cells);
+}
+
+function clearWinningLine() {
+    const board = document.getElementById('game-board');
+    const line = document.getElementById('win-line');
+    board.classList.remove('has-win');
+    line.className = '';
+}
+
+function showGameResult(winner) {
+    const winningCombination = getWinningCombination();
+    showWinningLine(winningCombination);
+
+    const title = document.getElementById('result-title');
+    if (winner === 'You Won!') {
+        title.innerText = 'X won';
+    } else if (winner === 'JoJo Won!') {
+        title.innerText = 'O won';
+    } else {
+        title.innerText = "It's a draw";
+    }
+
+    setTimeout(() => {
+        document.getElementById('result-modal').classList.add('show');
+        document.getElementById('result-modal').setAttribute('aria-hidden', 'false');
+    }, winningCombination ? 650 : 120);
+}
+
+function closeResultModal() {
+    const modal = document.getElementById('result-modal');
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
 }
 
 // Add winning animation
