@@ -1,9 +1,7 @@
 import torch
 import torch.nn.functional as F
 import numpy as np
-from replay_buffer import ReplayBuffer
 import copy
-from mcts import search
 
 
 class ClassicMCTSAgent:
@@ -36,11 +34,15 @@ class AlphaZeroAgent:
 
 class AlphaZeroAgentTrainer(AlphaZeroAgent):
   def __init__(self, model, optimizer, replay_buffer_max_size):
+    from replay_buffer import ReplayBuffer
+
     super().__init__(model)
     self.optimizer = optimizer
     self.replay_buffer = ReplayBuffer(max_size=replay_buffer_max_size)
 
   def _selfplay(self, game, search_iterations, c_puct=1.0, dirichlet_alpha=None):
+    from mcts import search
+
     buffer = []
     while (first_person_result := game.get_first_person_result()) is None:
       root_node = search(

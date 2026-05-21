@@ -1,0 +1,15 @@
+name: jojo
+services:
+  - name: web
+    github:
+      repo: JUSTSUJAY/JoJo
+      branch: main
+      deploy_on_push: true
+    source_dir: backend
+    environment_slug: python
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    run_command: gunicorn --bind 0.0.0.0:${PORT:-8080} app:app
+    http_port: 8080
+    routes:
+      - path: /

@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, send_from_directory, session
 from flask_cors import CORS
 from game import TicTacToe
 import torch
@@ -6,20 +6,38 @@ from models import LinearNetwork
 from agents import AlphaZeroAgent
 import os
 import numpy as np
+from uuid import uuid4
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DOCS_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "docs"))
+MODEL_PATH = os.path.join(BASE_DIR, "tictactoe", "one_dim", "out", "model.pth")
+
+app = Flask(__name__, static_folder=DOCS_DIR, static_url_path="")
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
 CORS(app)  # This enables CORS for all routes
 
 @app.route("/")
-def hello():
-    return "Hello, World!"
+def index():
+    return send_from_directory(DOCS_DIR, "index.html")
+
+@app.route("/<path:path>")
+def static_files(path):
+    return send_from_directory(DOCS_DIR, path)
     
 # Load pre-trained model for Tic-Tac-Toe agent
 model = LinearNetwork(input_shape=(9,), action_space=9)
-model.load_state_dict(torch.load("./tictactoe/one_dim/out/model.pth"))
+model.load_state_dict(torch.load(MODEL_PATH, map_location=model.device))
 agent = AlphaZeroAgent(model)
 
-game = TicTacToe()
+games = {}
+
+def get_game():
+    game_id = session.get("game_id")
+    if not game_id or game_id not in games:
+        game_id = str(uuid4())
+        session["game_id"] = game_id
+        games[game_id] = TicTacToe()
+    return games[game_id]
 
 def is_gameActive(game):
     return game.get_result() is None
@@ -54,6 +72,7 @@ def is_gameActive(game):
 
 @app.route("/agent_move", methods=["POST"])
 def agent_move():
+    game = get_game()
     data = request.json
     last_human_move = data['cellIndex']
 
@@ -93,6 +112,7 @@ def agent_move():
 
 @app.route("/startgame", methods=["POST"])
 def startMove():
+    game = get_game()
     data = request.json
     player = data['player']
     if player == -1:
@@ -105,6 +125,7 @@ def startMove():
 
 @app.route("/reset", methods=["POST"])
 def reset():
+    game = get_game()
     game.reset()
     return jsonify({'num_legal_actions': str(len(game.get_legal_actions()))})
 
