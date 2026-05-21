@@ -209,9 +209,9 @@ function showGameResult(winner) {
 
     const title = document.getElementById('result-title');
     if (winner === 'You Won!') {
-        title.innerText = 'X won';
+        title.innerText = 'You won';
     } else if (winner === 'JoJo Won!') {
-        title.innerText = 'O won';
+        title.innerText = 'JoJo won';
     } else {
         title.innerText = "It's a draw";
     }
