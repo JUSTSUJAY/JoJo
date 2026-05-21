@@ -124,8 +124,16 @@ async function handleMove(cellIndex) {
 
 
 function updateBoard(player, index) {
-    var pos = document.getElementById(`cell${index}`).innerText = player === 1 ? 'X' : 'O';
-    player = player * -1;
+    const cell = document.getElementById(`cell${index}`);
+    cell.classList.remove('x-mark', 'o-mark');
+
+    if (player === '') {
+        cell.innerText = '';
+        return;
+    }
+
+    cell.innerText = player === 1 ? 'X' : 'O';
+    cell.classList.add(player === 1 ? 'x-mark' : 'o-mark');
 }
 
 async function resetGame() {
@@ -143,7 +151,9 @@ async function resetGame() {
 
     document.querySelectorAll('.cell').forEach(cell => {
         cell.innerText = '';
-        cell.style.backgroundColor = 'transparent';
+        cell.classList.remove('x-mark', 'o-mark', 'winner');
+        cell.style.backgroundColor = '';
+        cell.style.color = '';
     });
 
     console.log("Reset");
@@ -152,34 +162,13 @@ async function resetGame() {
 
 function toggleTheme() {
     darkTheme = !darkTheme;
-    const body = document.querySelector('body');
-    const buttons = document.querySelectorAll('button');
-    const cells = document.querySelectorAll('.cell');
-
-    if (darkTheme) {
-        body.style.backgroundColor = 'var(--dark-bg)';
-        body.style.color = 'var(--dark-text)';
-        buttons.forEach(button => {
-            if (button.id === 'start-button') return;
-            button.style.backgroundColor = 'var(--dark-button)';
-            button.style.color = 'white';
-        });
-    } else {
-        body.style.backgroundColor = 'var(--light-bg)';
-        body.style.color = 'var(--light-text)';
-        buttons.forEach(button => {
-            if (button.id === 'start-button') return;
-            button.style.backgroundColor = 'var(--light-button)';
-            button.style.color = 'white';
-        });
-    }
+    document.body.classList.toggle('light-theme', !darkTheme);
 }
 
 // Add winning animation
 function highlightWinningCells(winningCombination) {
     winningCombination.forEach(index => {
         const cell = document.getElementById(`cell${index}`);
-        cell.style.backgroundColor = darkTheme ? 'var(--dark-text)' : 'var(--light-text)';
-        cell.style.color = darkTheme ? 'var(--dark-bg)' : 'var(--light-bg)';
+        cell.classList.add('winner');
     });
 }
